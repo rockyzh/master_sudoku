@@ -22,7 +22,7 @@ strong {
     display:none;
     width:24px;
     height:24px;
-    background:transparent url('/sudoku/images/settings.png') no-repeat center center;
+    background:transparent url('../images/settings.png') no-repeat center center;
     border-radius:12px;
     box-shadow:0px 0px 5px #000;
     z-index:2;
@@ -53,7 +53,7 @@ strong {
     display:none;
     width:24px;
     height:24px;
-    background:transparent url('/sudoku/images/close.png') no-repeat center center;
+    background:transparent url('../images/close.png') no-repeat center center;
     border-radius:12px;
     box-shadow:0px 0px 5px #000;
     z-index:2;
@@ -84,7 +84,7 @@ strong {
     display:none;
     width:24px;
     height:24px;
-    background:transparent url('/sudoku/images/button.png') no-repeat center center;
+    background:transparent url('../images/button.png') no-repeat center center;
     border-radius:12px;
     box-shadow:0px 0px 5px #000;
     z-index:2;
@@ -134,15 +134,15 @@ strong {
 }
 
 .game .menu .selectors.checkboxes .selector {
-    background:transparent url('/sudoku/images/checkmark_normal.png') no-repeat 3px 1px;
+    background:transparent url('../images/checkmark_normal.png') no-repeat 3px 1px;
 }
 .game .menu .selectors .selector.selected {
-    background:transparent url('/sudoku/images/checkmark_selected.png') no-repeat 3px 1px;
+    background:transparent url('../images/checkmark_selected.png') no-repeat 3px 1px;
 }
 
 .game .board {
     height:534px;
-    background:transparent url('/sudoku/images/board_background.png') top left repeat;
+    background:transparent url('../images/board_background.png') top left repeat;
     box-shadow: 5px 5px 5px #DDDDDD;
     -moz-user-select:none;
     -webkit-user-select:none;
