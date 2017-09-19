@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Sudoku</title>
+    <link rel="stylesheet" type="text/css" href="./css/reset.css" />
+    <link rel="stylesheet" type="text/css" href="./css/style.css" />
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/animator.min.js"></script>
+    <script type="text/javascript" src="./js/underscore.min.js"></script>
+    <script type="text/javascript" src="./js/main.js"></script>
+    <script type="text/javascript">
+        _.templateSettings = {
+            evaluate    : /<#([\s\S]+?)#>/g,
+            interpolate : /<#=([\s\S]+?)#>/g
+        };
+    </script>
+    <script id="template_menu_container" class="template" type="text/template">
+        <div class="widget">
+            <a class="close-trigger" href="#"></a>
+            <h2 class="header"><#=salutation#></h2>
+            <div class="indicator"><img class="" src="/sudoku/images/indicator.gif"/></div>
+            <div class="content"></div>
+        </div>
+    </script>
+    <script id="template_menu_selector_cancel_confirm" class="template" type="text/template">
+        <div class="copy">Are you sure you want to cancel your current game.</div>
+        <div class="selectors" data-property="cancel_confirm" data-disposition="radio">
+            <# _.each(selectors, function(val, key) { #>
+                <a class="selector <#= val.selected ? 'selected' : '' #>" data-value="<#=val.value#>" href="#">
+                    <#=val.name#>
+                </a>
+                <#  }); #>
+        </div>
+    </script>
+    <script id="template_menu_selector_player_mode" class="template" type="text/template">
+        <div class="copy">To start a new game, select the number of players first.</div>
+        <div class="selectors" data-property="player_mode" data-disposition="radio">
+            <# _.each(selectors, function(val, key) { #>
+                <a class="selector <#= val.selected ? 'selected' : '' #>" data-value="<#=val.value#>" href="#">
+                    <#=val.name#>
+                </a>
+                <#  }); #>
+        </div>
+    </script>
+    <script id="template_menu_selector_difficulty" class="template" type="text/template">
+        <div class="copy">
+            <span>You selected a</span>
+            <strong><#= config.player_mode.singleplayer ? 'singleplayer' : 'multiplayer' #></strong>
+            <span>game. Go</span>
+            <a class="navigator" data-target="player_mode" data-source="difficulty" href="#">back</a>
+            <span>to change.</span>
+        </div>
+        <# if (config.player_mode && config.player_mode.singleplayer == true) { #>
+            <div class="selectors radio" data-property="difficulty" data-disposition="radio">
+                <# } else { #>
+                    <div class="selectors checkboxes" data-property="difficulty" data-disposition="checkboxes">
+                        <# } #>
+                            <# _.each(selectors, function(val, key) { #>
+                                <a class="selector <#= val.selected ? 'selected' : '' #>" data-value="<#=val.value#>" href="#">
+                                    <#=val.name#>
+                                </a>
+                                <#  }); #>
+                    </div>
+    </script>
+</head>
+<body>
+<div class="game">
+    <a class="menu-trigger" href="#"></a>
+    <div class="menu"></div>
+    <div class="board">
+        <div class="row" id="row1">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row2">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row3">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row4">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row5">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row6">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row7">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row8">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+        <div class="row" id="row9">
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+            <div class="cell"></div>
+        </div>
+    </div>
+    <div class="legend">
+        <div class="row">
+            <div class="cell">1</div>
+            <div class="cell">2</div>
+            <div class="cell">3</div>
+            <div class="cell">4</div>
+            <div class="cell">5</div>
+            <div class="cell">6</div>
+            <div class="cell">7</div>
+            <div class="cell">8</div>
+            <div class="cell">9</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
