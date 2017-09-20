@@ -636,38 +636,6 @@ function renderSolvedBoard(board) {
     }
 }
 
-function getCurrentBoard() {
-
-    var board = new Array(9);
-
-    for(var i = 0; i < 9; i++) {
-        for(var j = 0; j < 9; j++) {
-            if(j === 0) {
-                board[i] = new Array(9);
-            }
-            var id = "" + i + j;
-            var el = document.getElementById(id);
-            var child = el.children[0];
-            var value = "0";
-            if(child.tagName === 'INPUT') {
-                value = child.value;
-            }
-            else if(child.tagName == 'SPAN') {
-                value = child.textContent;
-            }
-            if(value.match(/^[1-9]$/)) {
-                value = parseInt(value);
-            } else {
-                //TODO: prompt user for invalid chars
-                value = 0;
-            }
-            board[i][j] = value;
-        }
-    }
-
-    return board;
-}
-
 function printBoard(board) {
     for(var i = 0; i < 9; i++) {
         var line = "";
@@ -678,79 +646,6 @@ function printBoard(board) {
     }
 }
 
-function solveTest(level, after) {
-
-    var easyCount = 2000;
-    var hardCount = 200;
-
-    switch(level) {
-        case 1:
-            easyCount = 475;
-            hardCount = 25;
-            break;
-        case 2:
-            easyCount = 2375;
-            hardCount = 125;
-            break;
-        case 3:
-            easyCount = 4750;
-            hardCount = 250;
-            break;
-    }
-
-    Math.enableFakeRandom();
-    Math.fakeRandomSeed(31337);
-
-    renderBoard(easyPuzzle);
-
-    var timeElapsed = 0;
-
-    var tests = [];
-    tests.push(function() {
-        timeElapsed += solveTestHelper(easyPuzzle, easyCount);
-    });
-    tests.push(function() {
-        timeElapsed += solveTestHelper(easyPuzzle2, easyCount);
-    });
-    tests.push(function() {
-        timeElapsed += solveTestHelper(mediumPuzzle, hardCount);
-    });
-    tests.push(function() {
-        timeElapsed += solveTestHelper(hardPuzzle, hardCount);
-    });
-    tests.push(function() {
-        Math.disableFakeRandom();
-        document.getElementById("timeFinished").textContent = timeElapsed.toFixed(3) + "s";
-    });
-    tests.push(after);
-
-    var current = 0;
-
-    var timeoutFunc = function() {
-        if(current < tests.length) {
-            tests[current]();
-            current++;
-            window.setTimeout(timeoutFunc, 300);
-        }
-    }
-
-    window.setTimeout(timeoutFunc, 300);
-
-}
-
-function solveTestHelper(puzzle, iterations) {
-    var solution = null;
-    var start = new Date();
-    for(var i = 0; i < iterations; i++) {
-        solution = solveSudoku(puzzle);
-    }
-    var end = new Date();
-    renderBoard(puzzle);
-    renderSolvedBoard(solution);
-    var timeElapsed = (end.getTime() - start.getTime()) / 1000;
-    return timeElapsed;
-}
-
 function initialize() {
     // hook up buttons
 
@@ -758,14 +653,11 @@ function initialize() {
     renderBoard(currentPuzzle);
 
     var amazeButton = document.getElementById('amazeButton');
-    var calculatingDiv = document.getElementById('calculating');
-    var finishedCalculatingDiv = document.getElementById('finishedCalculating');
     var winBlock = document.getElementById('youWon');
     var noErrorsSpan = document.getElementById('noErrors');
     var errorsFoundSpan = document.getElementById('errorsFound');
     var difficulty = document.getElementById('difficulty');
     var currentErrors = [];
-    var amazing = false;
 
     var clearErrors = function() {
 
@@ -777,23 +669,6 @@ function initialize() {
         }
         currentErrors = [];
     }
-
-    amazeButton.addEventListener('click', function() {
-        if(!amazing) {
-            var level = parseInt(difficulty.options[difficulty.selectedIndex].value);
-            amazing = true;
-            clearErrors();
-            finishedCalculatingDiv.style.display = 'none';
-            calculatingDiv.style.display = 'block';
-
-            solveTest(level, function() {
-                finishedCalculatingDiv.style.display = 'block';
-                calculatingDiv.style.display = 'none';
-                amazing = false;
-                currentPuzzle = hardPuzzle;
-            });
-        }
-    }, false);
 
     var checkButton = document.getElementById('checkButton');
 

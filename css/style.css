@@ -200,6 +200,9 @@ strong {
 .game .board .cell.empty:hover {
     background-color:#FAFAFA;
 }
+.game .board .cell.helped {
+    color: orange;
+}
 
 .game .board .cell.init {
     color: #000000;

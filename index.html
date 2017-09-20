@@ -10,112 +10,156 @@
     <script type="text/javascript" src="./js/underscore.min.js"></script>
     <script type="text/javascript" src="./js/sudoku.js"></script>
     <script type="text/javascript" src="./js/main.js"></script>
+    <script type="text/javascript">
+        _.templateSettings = {
+            evaluate    : /<#([\s\S]+?)#>/g,
+            interpolate : /<#=([\s\S]+?)#>/g
+        };
+    </script>
+    <script id="template_menu_container" class="template" type="text/template">
+        <div class="widget">
+            <a class="close-trigger" href="#"></a>
+            <h2 class="header"><#=title#></h2>
+            <div class="indicator"><img class="" src="./images/indicator.gif"/></div>
+            <div class="content">
+                <div class="gameControlSet">
+                    <input id="newGameButton" type="submit" value="NEW GAME" class="gameControls"/>
+                    <br/>
+                    <label>
+                        Level:
+                    </label>&nbsp;&nbsp;
+                    <select id="difficulty">
+                        <option value="1" selected>Easy</option>
+                        <option value="2">Medium</option>
+                        <option value="3">Hard</option>
+                        <option value="4">Very Hard</option>
+                        <option value="5">Insane</option>
+                    </select>
+                </div>
+                <div class="gameControlSet">
+                    <input id="checkButton" type="submit" value="CHECK &#x2713;" class="gameControls"/>
+                    <br/>
+                    <span id="errorsFound" class="errorsFound" style="display: none;" role="tab" aria-selected="true" aria-controls="ErrorsFound" tabindex="300">MISTAKE FOUND</span>
+                    <span id="noErrors" class="noErrors" style="display: none;" role="tab" aria-selected="true" aria-controls="NoErrorsFound" tabindex="400">LOOKIN GOOD</span>
+                </div>
+                <div class="gameControlSet">
+                    <input id="solveButton" type="submit" value="SOLVE" class="gameControls"/>
+                </div>
+            </div>
+        </div>
+    </script>
 </head>
 <body>
 <div class="game">
-    <a class="menu-trigger" href="#"></a>
-    <div class="menu"></div>
-    <div class="board">
-        <div class="row" id="row1">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row2">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row3">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row4">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row5">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row6">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row7">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row8">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-        </div>
-        <div class="row" id="row9">
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
-            <div class="cell"></div>
+    <div style="width:100%">
+        <div style="display:inline-block">
+            <a class="menu-trigger" href="#"></a>
+            <div class="menu"></div>
+
+            <div class="board">
+                <div class="row" id="row1">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row2">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row3">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row4">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row5">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row6">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row7">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row8">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+                <div class="row" id="row9">
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                    <div class="cell"></div>
+                </div>
+            </div>
         </div>
     </div>
+
     <div class="legend">
         <div class="row">
             <div class="cell">1</div>
@@ -128,6 +172,20 @@
             <div class="cell">8</div>
             <div class="cell">9</div>
         </div>
+    </div>
+</div>
+
+<div id="youWon" style="display: none;">
+    <div>
+        <span role="alert" aria-selected="true" aria-controls="youWin" tabindex="500">YOU WIN!</span>
+        <br/>
+        <small role="tab" aria-selected="true" aria-controls="youWinText" tabindex="600">
+            Great job. Can you do it again?
+        </small>
+        <br/>
+        <br/>
+        <input id="winNewGameButton" type="submit" value="NEW GAME" class="gameControls"/>
+        <input id="winCloseButton" type="submit" value="CLOSE" class="gameControls"/>
     </div>
 </div>
 

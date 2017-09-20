@@ -10,6 +10,7 @@ $(function() {
     var board            = null;
     var highlighted      = null;
     var counters         = null;
+    var templates        = null;
 
     $(document.body).bind('click', function() {
         if ($selected.length > 0) {
@@ -20,6 +21,156 @@ $(function() {
             closeCellInput($selected);
         }
     });
+
+    $game.delegate('.menu-trigger', 'click', function(e) {
+        e.preventDefault();
+
+        setGameStateClass('paused');
+
+        $menu.data('config', {});
+        $menu.data('state', 'reset');
+        $menu.data('salutation', 'new game');
+
+        showMenu();
+    });
+
+    $menu.delegate('#newGameButton', 'click', function(e) {
+        e.preventDefault();
+
+        startLoadingPuzzle();
+    });
+
+    var currentErrors = [];
+
+    function clearErrors() {
+        var noErrorsSpan = document.getElementById('noErrors');
+        var errorsFoundSpan = document.getElementById('errorsFound');
+
+        errorsFoundSpan.style.display = 'none';
+        noErrorsSpan.style.display = 'none';
+
+        for(var i = 0; i < currentErrors.length; i++) {
+            currentErrors[i].setAttribute('class', currentErrors[i].getAttribute('class').replace(" error", ''))
+        }
+        currentErrors = [];
+    }
+
+    function getCurrentBoard() {
+
+        var board = new Array(9);
+
+        for(var i = 0; i < 9; i++) {
+            for(var j = 0; j < 9; j++) {
+                if(j === 0) {
+                    board[i] = new Array(9);
+                }
+
+                var value = $($boardCells[i*9+j]).text();
+                if(value.match(/^[1-9]$/)) {
+                    value = parseInt(value);
+                } else {
+                    //TODO: prompt user for invalid chars
+                    value = 0;
+                }
+                board[i][j] = value;
+            }
+        }
+
+        return board;
+    }
+
+    $menu.delegate('#checkButton', 'click', function(e) {
+        e.preventDefault();
+
+        clearErrors();
+
+        var noErrorsSpan = document.getElementById('noErrors');
+        var errorsFoundSpan = document.getElementById('errorsFound');
+        var winBlock = document.getElementById('youWon');
+        var difficulty = document.getElementById('difficulty');
+
+        var board = getCurrentBoard();
+        var result = verifySolution(board);
+        if(result['valid']) {
+
+            var validMessages = [ "LOOKIN GOOD", "KEEP GOING", "AWESOME", "EXCELLENT",
+                "NICE", "SWEET", "LOOKS GOOD TO ME"];
+
+            if(verifySolution(board, true)['valid']) {
+                winBlock.style.display = 'block';
+            }
+            else {
+                var randIndex = getRandom(validMessages.length);
+                noErrorsSpan.textContent = validMessages[randIndex];
+                noErrorsSpan.style.display = 'block';
+            }
+        }
+        else {
+            if('badRow' in result) {
+                var row = result['badRow'];
+                for(var i = 0; i < 9; i++) {
+                    var id = "" + row + i;
+                    var el = document.getElementById(id);
+                    el.setAttribute("class", el.getAttribute('class') + " error");
+                    currentErrors.push(el);
+                }
+            }
+            else if('badCol' in result) {
+                var col = result['badCol'];
+                for(var i = 0; i < 9; i++) {
+                    var id = "" + i + col;
+                    var el = document.getElementById(id);
+                    el.setAttribute("class", el.getAttribute('class') + " error");
+                    currentErrors.push(el);
+                }
+            }
+            else if('badCube' in result) {
+                var cubeRow = result['badCube'][0];
+                var cubeCol = result['badCube'][1];
+                for(var x = cubeRow + 2; x >= cubeRow; x--) {
+                    for(var y = cubeCol + 2; y >= cubeCol; y--) {
+                        var id = "" + x + y;
+                        var el = document.getElementById(id);
+                        el.setAttribute("class", el.getAttribute('class') + " error");
+                        currentErrors.push(el);
+                    }
+                }
+
+            }
+            errorsFoundSpan.style.display = 'block';
+        }
+    });
+
+    function renderSolvedBoard(solved) {
+        for(var i = 0; i < 9; i++) {
+            for(var j = 0; j < 9; j++) {
+                board.puzzle[i][j] = solved[i][j];
+
+                $($boardCells[i*9+j]).removeClass('empty').addClass('solved helped');
+                $($boardCells[i*9+j]).text(solved[i][j]);
+            }
+        }
+    }
+
+    $menu.delegate('#solveButton', 'click', function(e) {
+        e.preventDefault();
+
+        clearErrors();
+        renderSolvedBoard(solveSudoku(board.puzzle));
+    }, false);
+
+    $menu.delegate('.close-trigger', 'click', function(e) {
+        e.preventDefault();
+
+        setGameStateClass('running');
+    });
+
+    function showMenu() {
+        var template   = templates['template_menu_container'];
+        var html       = template({title:''});
+
+        $menu.html(html);
+    }
 
     $board.delegate('.cell.empty', 'click', function(e) {
         if ($game.hasClass('running') == false) {
@@ -265,12 +416,28 @@ $(function() {
         updateLegend();
     }
 
+    function parseTemplates() {
+        var templates = {};
+
+        $('script.template').each(function(idx, el) {
+            var $this = $(el);
+            var text  = $this.text();
+            var id    = $this.attr('id');
+
+            templates[id] = _.template(text);
+        });
+
+        return templates;
+    }
+
     function initializeApp() {
         $legendCells.each(function(idx, cell) {
             var $cell  = $(cell);
 
             $cell.addClass('disabled');
         });
+
+        templates = parseTemplates();
 
         setGameStateClass('clean');
 
