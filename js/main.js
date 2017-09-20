@@ -10,8 +10,6 @@ $(function() {
     var board            = null;
     var highlighted      = null;
     var counters         = null;
-    var templates        = null;
-    var gameLoaderHandle = null;
 
     $(document.body).bind('click', function() {
         if ($selected.length > 0) {
@@ -72,84 +70,6 @@ $(function() {
     $board.delegate('.cell.solved', 'click', handleHighlightTrigger);
     $legend.delegate('.cell', 'click', handleHighlightTrigger);
 
-    $menu.delegate('.close-trigger', 'click', function(e) {
-        e.preventDefault();
-
-        cancelLoadingPuzzle();
-
-        setGameStateClass('running');
-    });
-
-    $menu.delegate('.selector', 'click', function(e) {
-        e.preventDefault();
-
-        var $this       = $(this);
-        var $group      = $this.closest('.selectors');
-        var disposition = $group.attr('data-disposition');
-        var property    = $group.attr('data-property');
-        var config      = $menu.data('config');
-        var values      = null;
-
-        // update "selected" class
-        if (disposition == 'checkboxes') {
-            var classFunction = $this.hasClass('selected') ? 'removeClass' : 'addClass';
-            $this[classFunction]('selected');
-        }
-        else {
-            $group.find('.selector').removeClass('selected');
-            $this.addClass('selected');
-        }
-
-        // construct values hash
-        $group.find('.selector').each(function(idx, el) {
-            var $el = $(el);
-
-            if ($el.hasClass('selected')) {
-                var value = $(el).attr('data-value');
-                
-                if (values == null) {
-                    values = {};
-                }
-
-                values[value] = true;
-            }
-        });
-
-        config[property] = values;
-        $menu.data('config', config);
-
-        showMenu();
-    });
-
-    $menu.delegate('.navigator', 'click', function(e) {
-        e.preventDefault();
-
-        cancelLoadingPuzzle();
-
-        var $this  = $(this);
-        var config = $menu.data('config');
-        var target = $this.attr('data-target');
-        var source = $this.attr('data-source');
-        
-        delete config[target];
-        delete config[source];
-
-        $menu.data('config', config);
-
-        showMenu();
-    });
-
-    $game.delegate('.menu-trigger', 'click', function(e) {
-        e.preventDefault();
-
-        setGameStateClass('paused');
-
-        $menu.data('config', {});
-        $menu.data('state', 'reset');
-        $menu.data('salutation', 'new game');
-        showMenu();
-    });
-
     function handleHighlightTrigger(e) {
         if ($game.hasClass('running') == false) {
             return false;
@@ -174,7 +94,7 @@ $(function() {
 
     function closeCellInput($cell) {
         var index     = $boardCells.index($cell);
-        var target    = board.solution[index]+1;
+        var target    = board.solution[Math.floor(index/9)][index%9];
         var number    = $cell.find('input').val();
         var complete  = false;
 
@@ -184,7 +104,7 @@ $(function() {
             $cell.text(number).addClass('solved');
             counters[number]++;
             highlightCells(number);
-            udpateLegend();
+            updateLegend();
 
             complete = checkComplete();
         }
@@ -209,7 +129,8 @@ $(function() {
             $menu.data('config', {});
             $menu.data('state', 'complete-singleplayer');
             $menu.data('salutation', 'well done!');
-            showMenu();
+
+            //showMenu();
         }
     }
 
@@ -228,7 +149,7 @@ $(function() {
         highlighted = number;
     }
 
-    function udpateLegend() {
+    function updateLegend() {
         $legendCells.each(function(idx, cell) {
             var $cell  = $(cell);
             var number = idx+1;
@@ -263,28 +184,6 @@ $(function() {
             addClass(classes);
     }
 
-    function setGameConfigClasses(classes) {
-        var configStates = ['singleplayer', 'multiplayer', 'easy', 'medium', 'hard'];
-
-        $game.
-            removeClass(configStates.join(' ')).
-            addClass(classes);
-    }
-
-    function parseTemplates() {
-        var templates = {};
-
-        $('script.template').each(function(idx, el) {
-            var $this = $(el);
-            var text  = $this.text();
-            var id    = $this.attr('id');
-
-            templates[id] = _.template(text);
-        });
-
-        return templates;
-    }
-
     function populateSelectors(defaults, values) {
         var result = [];
 
@@ -301,127 +200,30 @@ $(function() {
         return result;
     }
 
-    var startLoadingPuzzleWithDelay = _.debounce(function() {
-        var config = $menu.data('config');
+    function startLoadingPuzzle() {
+        setGameStateClass('running');
 
-        if (config.player_mode && config.player_mode.multiplayer == true && config.difficulty) {
-            alert('not yet');
-            //startLoadingPuzzle(config);
-        }
-    }, 3000);
+        var hardPuzzle = [
+            [0, 0, 3, 0, 0, 8, 0, 0, 0],
+            [0, 4, 0, 0, 0, 0, 0, 0, 0],
+            [0, 8, 0, 3, 5, 0, 9, 0, 0],
+            [8, 0, 5, 0, 0, 6, 0, 0, 0],
+            [1, 0, 0, 7, 3, 2, 0, 0, 8],
+            [0, 0, 0, 8, 0, 0, 3, 0, 1],
+            [0, 0, 8, 0, 1, 4, 0, 7, 0],
+            [0, 0, 0, 0, 0, 0, 0, 5, 0],
+            [0, 0, 0, 9, 0, 0, 2, 0, 0]
+        ];
 
-    function showMenu() {
-        var config     = $menu.data('config');
-        var state      = $menu.data('state');
-        var salutation = $menu.data('salutation');
+        var puzzle = generatePuzzle();
 
-        cancelLoadingPuzzle();
-        showMenuContainer(salutation);
+        board = {puzzle:puzzle};
 
-        var $widget  = $menu.find('.widget');
-        var $content = $widget.find('.content');
+        setTimeout(function () {
+            board.solution = solveSudoku(puzzle, {});
+        }, 1);
 
-        if ($game.hasClass('paused') && !config.cancel_confirm) {
-            var defaults   = [
-                {name:'No', value:'no', selected:false},
-                {name:'Yes', value:'yes', selected:false}
-            ];
-
-            var data = {config:config, selectors:defaults};
-            showMenuContent('template_menu_selector_cancel_confirm', data);
-        }
-        else if ($game.hasClass('paused') && config.cancel_confirm && config.cancel_confirm.no) {
-            setGameStateClass('running');
-            return;
-        }
-        else if (!config.player_mode) {
-            var defaults   = [
-                {name:'Singleplayer', value:'singleplayer', selected:false},
-                {name:'Multiplayer', value:'multiplayer', selected:false}
-            ];
-
-            var data = {config:config, selectors:defaults};
-            showMenuContent('template_menu_selector_player_mode', data);
-        }
-        else {
-            var defaults   = [
-                {name:'Easy', value:'easy', selected:false},
-                {name:'Medium', value:'medium', selected:false},
-                {name:'Hard', value:'hard', selected:false}
-            ];
-
-            var selectors = populateSelectors(defaults, config.difficulty||{});
-            var data      = {config:config, selectors:selectors};
-            showMenuContent('template_menu_selector_difficulty', data);
-        }
-
-        if (config.player_mode && config.player_mode.singleplayer && config.difficulty) {
-            startLoadingPuzzle(config);
-        }
-        else {
-            startLoadingPuzzleWithDelay();
-        }
-    }
-
-    function showMenuContainer() {
-        var salutation = $menu.data('salutation');
-        var template   = templates['template_menu_container'];
-        var html       = template({salutation:salutation});
-
-        $menu.html(html);
-    }
-
-    function showMenuContent(templateName, data) {
-        var state    = $menu.data('state');
-        var $widget  = $menu.find('.widget');
-        var $content = $widget.find('.content');
-        var template = templates[templateName];
-        var html     = template(data);
-
-        $widget.addClass(state);
-        $content.html(html);
-    }
-
-    function cancelLoadingPuzzle() {
-        gameLoaderHandle && gameLoaderHandle.abort();
-        gameLoaderHandle = null;
-        $game.removeClass('loading');
-    }
-
-    function startLoadingPuzzle(config) {
-        $game.addClass('loading');
-        
-        var difficulty = _.keys(config.difficulty)[0];
-        var mode       = _.keys(config.player_mode)[0];
-        
-        gameLoaderHandle = $.ajax({
-            url: '/sudoku/api/v1/board',
-            type: 'GET',
-            success: function(data, status, ajax) {
-                gameLoaderHandle = null;
-                
-                // TODO: implemente error handling
-                if (!data || !data.payload) {
-                    console.log('ahtung, ahtung, grave error');
-                    return;
-                }
-                
-                board = data.payload;
-                
-                $game.removeClass('loading');
-                setGameStateClass('running');
-                setGameConfigClasses([mode, difficulty].join(' '));
-                initializeBoard(board);
-                
-                console.log(difficulty, mode, board.difficulty);
-            },
-            error: function() {
-                gameLoaderHandle = null;
-                
-                // TODO: implement
-                console.log('ahtung, ahtung, grave error');
-            }
-        });
+        initializeBoard(board);
     }
     
     function initializeBoard(board) {
@@ -431,16 +233,20 @@ $(function() {
 
         // populate cells
         counters = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0,'9':0};
-        for (var i = 0; i < $boardCells.length; i++) {
-            var $cell      = $boardCells.eq(i);
-            var number     = puzzle[i] == null ? '' : puzzle[i]+1;
-            var cellStates = ['empty', 'solved', 'highlighted'];
-            var cellState  = number == '' ? 'empty' : 'solved';
-            
-            $cell.text(number).removeClass(cellStates.join(' ')).addClass(cellState);
 
-            if (number != '') {
-                counters[number]++;
+        for (var i = 0; i < puzzle.length; i++) {
+            for (var j = 0; j < puzzle[i].length; j++) {
+                var $cell      = $boardCells.eq(i*9+j);
+
+                var number     = puzzle[i][j] ? puzzle[i][j] : '';
+                var cellStates = ['empty', 'solved', 'highlighted'];
+                var cellState  = number == '' ? 'empty' : 'solved init';
+
+                $cell.text(number).removeClass(cellStates.join(' ')).addClass(cellState);
+
+                if (number != '') {
+                    counters[number]++;
+                }
             }
         }
 
@@ -456,7 +262,7 @@ $(function() {
             }
         }
 
-        udpateLegend();
+        updateLegend();
     }
 
     function initializeApp() {
@@ -465,15 +271,10 @@ $(function() {
 
             $cell.addClass('disabled');
         });
-        
-        templates = parseTemplates();
 
         setGameStateClass('clean');
 
-        $menu.data('config', {});
-        $menu.data('state', 'normal');
-        $menu.data('salutation', 'wecome');
-        showMenu();
+        startLoadingPuzzle();
     }
 
     initializeApp();

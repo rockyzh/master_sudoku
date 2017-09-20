@@ -195,18 +195,20 @@ strong {
 
 .game .board .cell.solved {
     background-color:#F0F0F0;
+    color: green;
 }
 .game .board .cell.empty:hover {
     background-color:#FAFAFA;
 }
 
+.game .board .cell.init {
+    color: #000000;
+}
+
 .game .board .cell.highlighted {
-    background-color:#D7EEFB;
-    background-color:#00A3C7;
     background-color:#999999;
-    color:#FFFFFF;
-    olor:#000000;
     border:1px solid #CCCCCC;
+    color: #FFFFFF;
 }
 
 .game .board .cell input {
